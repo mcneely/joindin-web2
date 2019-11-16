@@ -2,14 +2,13 @@
 namespace User;
 
 use Application\BaseController;
-use Event\EventApi;
-use Event\EventDb;
-use Slim\Slim;
+use Application\CacheService;
 use Symfony\Component\Form\FormError;
-use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\Form\FormInterface;
-use Talk\TalkApi;
+use Slim\Slim;
 use Talk\TalkDb;
+use Talk\TalkApi;
+use Event\EventDb;
+use Event\EventApi;
 
 class UserController extends BaseController
 {
@@ -22,32 +21,32 @@ class UserController extends BaseController
      */
     protected function defineRoutes(\Slim\Slim $app)
     {
-        $app->get('/user/logout', [$this, 'logout'])->name('user-logout');
-        $app->map('/user/login', [$this, 'login'])->via('GET', 'POST')->name('user-login');
-        $app->map('/user/register', [$this, 'register'])->via('GET', 'POST')->name('user-register');
-        $app->get('/user/verification', [$this, 'verification'])->name('user-verification');
-        $app->map('/user/resend-verification', [$this, 'resendVerification'])
+        $app->get('/user/logout', array($this, 'logout'))->name('user-logout');
+        $app->map('/user/login', array($this, 'login'))->via('GET', 'POST')->name('user-login');
+        $app->map('/user/register', array($this, 'register'))->via('GET', 'POST')->name('user-register');
+        $app->get('/user/verification', array($this, 'verification'))->name('user-verification');
+        $app->map('/user/resend-verification', array($this, 'resendVerification'))
             ->via('GET', 'POST')->name('user-resend-verification');
-        $app->map('/user/username-reminder', [$this, 'remindUsername'])
+        $app->map('/user/username-reminder', array($this, 'remindUsername'))
             ->via('GET', 'POST')->name('user-username-reminder');
-        $app->map('/user/password-reset', [$this, 'resetPassword'])
+        $app->map('/user/password-reset', array($this, 'resetPassword'))
             ->via('GET', 'POST')->name('user-password-reset');
-        $app->map('/user/new-password', [$this, 'newPassword'])
+        $app->map('/user/new-password', array($this, 'newPassword'))
             ->via('GET', 'POST')->name('user-new-password');
-        $app->get('/user/twitter-login', [$this, 'loginWithTwitter'])->name('twitter-login');
-        $app->get('/user/twitter-access', [$this, 'accessTokenFromTwitter'])->name('twitter-callback');
-        $app->get('/user/facebook-access', [$this, 'accessTokenFromFacebook'])->name('facebook-callback');
-        $app->get('/user/:username', [$this, 'profile'])->name('user-profile');
-        $app->get('/user/:username/talks', [$this, 'profileTalks'])->name('user-profile-talks');
-        $app->get('/user/:username/events', [$this, 'profileEvents'])->name('user-profile-events');
-        $app->get('/user/:username/hosted', [$this, 'profileHosted'])->name('user-profile-hosted');
-        $app->get('/user/:username/comments', [$this, 'profileComments'])->name('user-profile-comments');
-        $app->map('/user/:username/edit', [$this, 'profileEdit'])
+        $app->get('/user/twitter-login', array($this, 'loginWithTwitter'))->name('twitter-login');
+        $app->get('/user/twitter-access', array($this, 'accessTokenFromTwitter'))->name('twitter-callback');
+        $app->get('/user/facebook-access', array($this, 'accessTokenFromFacebook'))->name('facebook-callback');
+        $app->get('/user/:username', array($this, 'profile'))->name('user-profile');
+        $app->get('/user/:username/talks', array($this, 'profileTalks'))->name('user-profile-talks');
+        $app->get('/user/:username/events', array($this, 'profileEvents'))->name('user-profile-events');
+        $app->get('/user/:username/hosted', array($this, 'profileHosted'))->name('user-profile-hosted');
+        $app->get('/user/:username/comments', array($this, 'profileComments'))->name('user-profile-comments');
+        $app->map('/user/:username/edit', array($this, 'profileEdit'))
             ->via('GET', 'POST')->name('user-profile-edit');
-        $app->get('/user/:username/delete', [$this, 'userDelete'])->name('user-profile-delete');
-        $app->get('/user/view/:userId(/:extra+)', [$this, 'redirectFromId'])
+        $app->get('/user/:username/delete', array($this, 'userDelete'))->name('user-profile-delete');
+        $app->get('/user/view/:userId(/:extra+)', array($this, 'redirectFromId'))
             ->name('user-redirect-from-id')
-            ->conditions(['userId' => '\d+']);
+            ->conditions(array('userId' => '\d+'));
     }
 
     /**
@@ -57,7 +56,7 @@ class UserController extends BaseController
      */
     public function login()
     {
-        $config  = $this->application->config('oauth');
+        $config = $this->application->config('oauth');
         $request = $this->application->request();
 
         $error = false;
@@ -65,14 +64,14 @@ class UserController extends BaseController
             // handle submission of login form
 
             // make a call to the api with granttype=password
-            $username     = $request->post('username');
-            $password     = $request->post('password');
-            $redirect     = $request->post('redirect');
-            $clientId     = $config['client_id'];
+            $username = $request->post('username');
+            $password = $request->post('password');
+            $redirect = $request->post('redirect');
+            $clientId = $config['client_id'];
             $clientSecret = $config['client_secret'];
 
             $authApi = $this->application->container->get(AuthApi::class);
-            $result  = $authApi->login($username, $password, $clientId, $clientSecret);
+            $result = $authApi->login($username, $password, $clientId, $clientSecret);
 
             $this->handleLogin($result, $redirect);
         }
@@ -111,9 +110,9 @@ class UserController extends BaseController
 
         $this->render(
             'User/register.html.twig',
-            [
+            array(
                 'form' => $form->createView(),
-            ]
+            )
         );
     }
 
@@ -122,13 +121,13 @@ class UserController extends BaseController
      *
      * Should an error occur will this method append an error message to the form's error collection.
      *
-     * @param FormInterface $form
+     * @param Form $form
      *
      * @return mixed
      */
     protected function registerUserUsingForm($form)
     {
-        $values  = $form->getData();
+        $values = $form->getData();
         $userApi = $this->getUserApi();
 
         $result = false;
@@ -150,7 +149,7 @@ class UserController extends BaseController
      */
     public function logout()
     {
-        $request  = $this->application->request();
+        $request = $this->application->request();
         $redirect = ($request->get('redirect')) ? $request->get('redirect') : "/";
 
         if (isset($_SESSION['user'])) {
@@ -172,7 +171,7 @@ class UserController extends BaseController
     {
         $request = $this->application->request();
 
-        $token   = $request->get('token');
+        $token = $request->get('token');
         $userApi = $this->getUserApi();
 
         try {
@@ -198,7 +197,7 @@ class UserController extends BaseController
 
             if ($form->isValid()) {
                 $values = $form->getData();
-                $email  = $values['email'];
+                $email = $values['email'];
 
                 $userApi = $this->getUserApi();
 
@@ -222,9 +221,9 @@ class UserController extends BaseController
 
         $this->render(
             'User/emailverification.html.twig',
-            [
+            array(
                 'form' => $form->createView(),
-            ]
+            )
         );
     }
 
@@ -237,21 +236,20 @@ class UserController extends BaseController
     public function profile($username)
     {
         $userApi = $this->getUserApi();
-        $user    = $userApi->getUserByUsername($username);
+        $user = $userApi->getUserByUsername($username);
         if (!$user) {
             Slim::getInstance()->notFound();
         }
 
-        $talkDb   = $this->getTalkDb();
-        $talkApi  = $this->getTalkApi();
+        $talkDb = $this->getTalkDb();
+        $talkApi = $this->getTalkApi();
         $eventApi = $this->getEventApi();
-        $eventUri = null;
 
-        $eventInfo = []; // look up an event's name and url_friendly_name from its uri
-        $talkInfo  = []; // look up a talk's url_friendly_talk_title from its uri
+        $eventInfo = array(); // look up an event's name and url_friendly_name from its uri
+        $talkInfo = array(); // look up a talk's url_friendly_talk_title from its uri
 
         $talkCollection = $talkApi->getCollection($user->getTalksUri(), ['verbose' => 'yes', 'resultsperpage' => 5]);
-        $talks          = false;
+        $talks = false;
         if (isset($talkCollection['talks'])) {
             $talks = $talkCollection['talks'];
             foreach ($talks as $talk) {
@@ -287,12 +285,12 @@ class UserController extends BaseController
             }
             $talkData = $talkDb->load('uri', $comment->getTalkUri());
             if ($talkData) {
-                $eventUri                                                     = $talkData['event_uri'];
+                $eventUri = $talkData['event_uri'];
                 $talkInfo[$comment->getTalkUri()]['url_friendly_talk_title']  = $talkData['slug'];
             } else {
                 $talk = $talkApi->getTalk($comment->getTalkUri());
                 if ($talk) {
-                    $eventUri                                                    = $talk->getEventUri();
+                    $eventUri = $talk->getEventUri();
                     $talkInfo[$comment->getTalkUri()]['url_friendly_talk_title'] = $talk->getUrlFriendlyTalkTitle();
                 }
             }
@@ -305,7 +303,7 @@ class UserController extends BaseController
 
         echo $this->render(
             'User/profile.html.twig',
-            [
+            array(
                 'thisUser'         => $user,
                 'talks'            => $talks,
                 'eventInfo'        => $eventInfo,
@@ -313,7 +311,7 @@ class UserController extends BaseController
                 'events'           => $events,
                 'hostedEvents'     => $hostedEvents,
                 'talkComments'     => $talkComments,
-            ]
+            )
         );
     }
 
@@ -326,7 +324,7 @@ class UserController extends BaseController
     public function profileTalks($username)
     {
         $userApi = $this->getUserApi();
-        $user    = $userApi->getUserByUsername($username);
+        $user = $userApi->getUserByUsername($username);
         if (!$user) {
             Slim::getInstance()->notFound();
         }
@@ -338,8 +336,7 @@ class UserController extends BaseController
             $this->application->redirect($this->application->urlFor('user-profile', ['username' => $username]));
         }
 
-        $eventInfo = [];
-        $talks     = [];
+        $eventInfo = array();
         if (isset($talkCollection['talks'])) {
             $talks = $talkCollection['talks'];
             foreach ($talks as $talk) {
@@ -352,11 +349,11 @@ class UserController extends BaseController
 
         echo $this->render(
             'User/profile-talks.html.twig',
-            [
+            array(
                 'thisUser'  => $user,
                 'talks'     => $talks,
                 'eventInfo' => $eventInfo,
-            ]
+            )
         );
     }
 
@@ -369,12 +366,12 @@ class UserController extends BaseController
     public function profileEvents($username)
     {
         $userApi = $this->getUserApi();
-        $user    = $userApi->getUserByUsername($username);
+        $user = $userApi->getUserByUsername($username);
         if (!$user) {
             Slim::getInstance()->notFound();
         }
 
-        $eventApi         = $this->getEventApi();
+        $eventApi = $this->getEventApi();
         $eventsCollection = $eventApi->getCollection(
             $user->getAttendedEventsUri(),
             ['verbose' => 'yes', 'resultsperpage' => 0]
@@ -385,11 +382,11 @@ class UserController extends BaseController
 
         echo $this->render(
             'User/profile-events.html.twig',
-            [
+            array(
                 'thisUser' => $user,
                 'events'   => $eventsCollection['events'],
                 'type'     => 'attended',
-            ]
+            )
         );
     }
 
@@ -402,12 +399,12 @@ class UserController extends BaseController
     public function profileHosted($username)
     {
         $userApi = $this->getUserApi();
-        $user    = $userApi->getUserByUsername($username);
+        $user = $userApi->getUserByUsername($username);
         if (!$user) {
             Slim::getInstance()->notFound();
         }
 
-        $eventApi               = $this->getEventApi();
+        $eventApi = $this->getEventApi();
         $hostedEventsCollection = $eventApi->getCollection(
             $user->getHostedEventsUri(),
             ['verbose' => 'yes', 'resultsperpage' => 0]
@@ -419,11 +416,11 @@ class UserController extends BaseController
 
         echo $this->render(
             'User/profile-events.html.twig',
-            [
+            array(
                 'thisUser' => $user,
                 'events'   => $hostedEventsCollection['events'],
                 'type'     => 'hosted',
-            ]
+            )
         );
     }
 
@@ -436,34 +433,33 @@ class UserController extends BaseController
     public function profileComments($username)
     {
         $userApi = $this->getUserApi();
-        $user    = $userApi->getUserByUsername($username);
+        $user = $userApi->getUserByUsername($username);
         if (!$user) {
             Slim::getInstance()->notFound();
         }
 
-        $talkDb       = $this->getTalkDb();
-        $talkApi      = $this->getTalkApi();
-        $eventApi     = $this->getEventApi();
-        $eventUri     = null;
+        $talkDb = $this->getTalkDb();
+        $talkApi = $this->getTalkApi();
+        $eventApi = $this->getEventApi();
         $talkComments = $talkApi->getComments($user->getTalkCommentsUri(), true, 0);
         if (!$talkComments) {
             $this->application->redirect($this->application->urlFor('user-profile', ['username' => $username]));
         }
 
-        $talkInfo  = [];
-        $eventInfo = [];
+        $talkInfo = array();
+        $eventInfo = array();
         foreach ($talkComments as $comment) {
             if (isset($talkInfo[$comment->getTalkUri()])) {
                 continue;
             }
             $talkData = $talkDb->load('uri', $comment->getTalkUri());
             if ($talkData) {
-                $eventUri                                                     = $talkData['event_uri'];
+                $eventUri = $talkData['event_uri'];
                 $talkInfo[$comment->getTalkUri()]['url_friendly_talk_title']  = $talkData['slug'];
             } else {
                 $talk = $talkApi->getTalk($comment->getTalkUri());
                 if ($talk) {
-                    $eventUri                                                    = $talk->getEventUri();
+                    $eventUri = $talk->getEventUri();
                     $talkInfo[$comment->getTalkUri()]['url_friendly_talk_title'] = $talk->getUrlFriendlyTalkTitle();
                 }
             }
@@ -476,30 +472,30 @@ class UserController extends BaseController
 
         $this->render(
             'User/profile-comments.html.twig',
-            [
+            array(
                 'thisUser'     => $user,
                 'talkComments' => $talkComments,
                 'eventInfo'    => $eventInfo,
                 'talkInfo'     => $talkInfo,
-            ]
+            )
         );
     }
 
     protected function lookupEventInfo($eventUri)
     {
-        $eventDb  = $this->getEventDb();
+        $eventDb = $this->getEventDb();
         $eventApi = $this->getEventApi();
 
-        $eventInfo = [];
+        $eventInfo = array();
         $eventData = $eventDb->load('uri', $eventUri);
         if (isset($eventData['name'])) {
             $eventInfo['url_friendly_name'] = $eventData['url_friendly_name'];
-            $eventInfo['name']              = $eventData['name'];
+            $eventInfo['name'] = $eventData['name'];
         } else {
             $event = $eventApi->getEvent($eventUri);
             if ($event) {
                 $eventInfo['url_friendly_name'] = $event->getUrlFriendlyName();
-                $eventInfo['name']              = $event->getName();
+                $eventInfo['name'] = $event->getName();
             }
         }
 
@@ -559,7 +555,7 @@ class UserController extends BaseController
 
             if ($form->isValid()) {
                 $values = $form->getData();
-                $email  = $values['email'];
+                $email = $values['email'];
 
                 $userApi = $this->getUserApi();
 
@@ -582,9 +578,9 @@ class UserController extends BaseController
 
         $this->render(
             'User/username-reminder.html.twig',
-            [
+            array(
                 'form' => $form->createView(),
-            ]
+            )
         );
     }
 
@@ -597,26 +593,25 @@ class UserController extends BaseController
     public function profileEdit($username)
     {
         $userApi = $this->getUserApi();
-        $user    = $userApi->getUserByUsername($username);
+        $user = $userApi->getUserByUsername($username);
         if (!$user) {
             Slim::getInstance()->notFound();
         }
 
         if (!$user->getCanEdit() || !isset($_SESSION['user'])) {
             $this->application->redirect(
-                $this->application->urlFor('not-allowed') . '?redirect=' . $this->application
-                    ->urlFor('user-profile-edit', ['username' => $username])
+                $this->application->urlFor('not-allowed') . '?redirect=' . $this->application->urlFor('user-profile-edit', ['username' => $username])
             );
         }
 
         // create an array of the data to be edited for use by the form
         $userData = [
-            'full_name'        => $user->getFullName(),
-            'email'            => $user->getEmail(),
+            'full_name' => $user->getFullName(),
+            'email' => $user->getEmail(),
             'twitter_username' => $user->getTwitterUsername(),
-            'biography'        => $user->getBiography(),
-            'old_password'     => '',
-            'password'         => '',
+            'biography' => $user->getBiography(),
+            'old_password' => '',
+            'password' => '',
         ];
 
         // can only change password if we're editing ourselves
@@ -671,18 +666,18 @@ class UserController extends BaseController
 
         $this->render(
             'User/profile-edit.html.twig',
-            [
-                'thisUser'            => $user,
-                'form'                => $form->createView(),
+            array(
+                'thisUser' => $user,
+                'form' => $form->createView(),
                 'can_change_password' => $canChangePassword,
-            ]
+            )
         );
     }
 
     public function userDelete($username)
     {
         $userApi = $this->getUserApi();
-        $user    = $userApi->getUserByUsername($username);
+        $user = $userApi->getUserByUsername($username);
 
         try {
             // LDBG($values);exit;
@@ -711,7 +706,7 @@ class UserController extends BaseController
             $form->submit($request->post($form->getName()));
 
             if ($form->isValid()) {
-                $values   = $form->getData();
+                $values = $form->getData();
                 $username = $values['username'];
 
                 $userApi = $this->getUserApi();
@@ -735,9 +730,9 @@ class UserController extends BaseController
 
         $this->render(
             'User/password-reset.html.twig',
-            [
+            array(
                 'form' => $form->createView(),
-            ]
+            )
         );
     }
 
@@ -749,7 +744,7 @@ class UserController extends BaseController
     public function newPassword()
     {
         $request = $this->application->request();
-        $token   = $request->get('token');
+        $token = $request->get('token');
 
         /** @var FormFactoryInterface $factory */
         $factory = $this->application->formFactory;
@@ -759,7 +754,7 @@ class UserController extends BaseController
             $form->submit($request->post($form->getName()));
 
             if ($form->isValid()) {
-                $values  = $form->getData();
+                $values = $form->getData();
                 $userApi = $this->getUserApi();
 
                 try {
@@ -781,9 +776,9 @@ class UserController extends BaseController
 
         $this->render(
             'User/new-password.html.twig',
-            [
+            array(
                 'form' => $form->createView(),
-            ]
+            )
         );
     }
 
@@ -794,11 +789,11 @@ class UserController extends BaseController
     public function loginWithTwitter()
     {
         // ask the API for a request token
-        $config       = $this->application->config('oauth');
-        $clientId     = $config['client_id'];
+        $config = $this->application->config('oauth');
+        $clientId = $config['client_id'];
         $clientSecret = $config['client_secret'];
 
-        $authApi       = $this->application->container->get(AuthApi::class);
+        $authApi = $this->application->container->get(AuthApi::class);
         $request_token = $authApi->getTwitterRequestToken($clientId, $clientSecret);
 
         if ($request_token) {
@@ -819,19 +814,19 @@ class UserController extends BaseController
      */
     public function accessTokenFromTwitter()
     {
-        $config  = $this->application->config('oauth');
+        $config = $this->application->config('oauth');
         $request = $this->application->request();
 
         // pass verification to the API so we can log in
-        $clientId     = $config['client_id'];
+        $clientId = $config['client_id'];
         $clientSecret = $config['client_secret'];
 
         // handle incoming vars
-        $token    = $request->get('oauth_token');
+        $token = $request->get('oauth_token');
         $verifier = $request->get('oauth_verifier');
 
         $authApi = $this->application->container->get(AuthApi::class);
-        $result  = $authApi->verifyTwitter($clientId, $clientSecret, $token, $verifier);
+        $result = $authApi->verifyTwitter($clientId, $clientSecret, $token, $verifier);
 
         $this->handleLogin($result);
     }
@@ -841,18 +836,18 @@ class UserController extends BaseController
      */
     public function accessTokenFromFacebook()
     {
-        $config  = $this->application->config('oauth');
+        $config = $this->application->config('oauth');
         $request = $this->application->request();
 
         // pass verification to the API so we can log in
-        $clientId     = $config['client_id'];
+        $clientId = $config['client_id'];
         $clientSecret = $config['client_secret'];
 
         // handle incoming vars
         $code = $request->get('code');
 
         $authApi = $this->application->container->get(AuthApi::class);
-        $result  = $authApi->verifyFacebook($clientId, $clientSecret, $code);
+        $result = $authApi->verifyFacebook($clientId, $clientSecret, $code);
 
         $this->handleLogin($result);
     }
@@ -861,21 +856,18 @@ class UserController extends BaseController
      * Process a user login result. If result is false, then we failed, otherwise
      * update the session.
      *
-     * @param  \stdClass|false  $result
-     * @param  string           $redirect
+     * @param  stdclass|false  $result
+     * @param  string          $redirect
      * @return void
      */
     protected function handleLogin($result, $redirect = '')
     {
         if (!is_object($result)) {
-            if ($result === false || $result[0] == 'Signin failed') {
+            if (false === $result || $result[0] == 'Signin failed') {
                 $this->application->flash('error', "Failed to log in");
             }
             if ($result[0] == 'Not verified') {
-                $message = 'User account not verified. ' .
-                    "<a href='/user/resend-verification'>Click here</a> to resend welcome email.";
-                $this->application
-                    ->flash('error', $message);
+                $this->application->flash('error', "User account not verified. <a href='/user/resend-verification'>Click here</a> to resend welcome email.");
             }
 
             if (empty($redirect)) {
@@ -886,7 +878,7 @@ class UserController extends BaseController
 
         session_regenerate_id(true);
         $_SESSION['access_token'] = $result->access_token;
-        $this->accessToken        = $_SESSION['access_token'];
+        $this->accessToken = $_SESSION['access_token'];
 
         // now get users details
         $userApi = $this->getUserApi();
@@ -909,7 +901,7 @@ class UserController extends BaseController
     public function redirectFromId($userId)
     {
         $userApi = $this->getUserApi();
-        $user    = $userApi->getUserByUserId($userId);
+        $user = $userApi->getUserByUserId($userId);
         if (!$user) {
             return $this->application->notFound();
         }
@@ -917,7 +909,7 @@ class UserController extends BaseController
         $this->application->redirect(
             $this->application->urlFor(
                 'user-profile',
-                ['username' => $user->getUsername()]
+                array('username' => $user->getUsername())
             )
         );
     }

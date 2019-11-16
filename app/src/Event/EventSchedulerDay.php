@@ -12,31 +12,31 @@ use DateTime;
 class EventSchedulerDay
 {
     /**
-     * @var string
+     * @var DateTime $date
      */
     private $date;
 
     /**
-     * @var array
+     * @var Array $talks
      */
     private $talks;
 
     /**
-     * @var array
+     * @var Array $tracks
      */
     private $tracks;
 
     /**
      * Constructor
      *
-     * @param string $date
-     * @param array $talks  Multi-dimensional associative array of talk objects
-     * @param array $tracks Indexed array of track names
+     * @param $date String
+     * @param $talks Array Multi-dimensional associative array of talk objects
+     * @param $tracks Array Indexed array of track names
      */
     public function __construct($date, $talks, $tracks)
     {
-        $this->date   = $date;
-        $this->talks  = $talks;
+        $this->date = $date;
+        $this->talks = $talks;
         $this->tracks = $tracks;
     }
 
@@ -55,7 +55,7 @@ class EventSchedulerDay
     /**
      * Get talks
      *
-     * @return array
+     * @return Array
      */
     public function getTalks()
     {
@@ -65,7 +65,7 @@ class EventSchedulerDay
     /**
      * Get tracks
      *
-     * @return array
+     * @return Array
      */
     public function getTracks()
     {

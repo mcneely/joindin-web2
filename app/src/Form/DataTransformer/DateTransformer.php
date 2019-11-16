@@ -30,8 +30,10 @@ class DateTransformer implements DataTransformerInterface
     protected function convertDate($value, $format)
     {
         if ($value) {
-            $d     = new DateTime($value, $this->timezone);
-            $value = $d->format($format);
+            $d = new DateTime($value, $this->timezone);
+            if ($d) {
+                $value = $d->format($format);
+            }
         }
         return $value;
     }

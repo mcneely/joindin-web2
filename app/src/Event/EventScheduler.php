@@ -34,7 +34,7 @@ class EventScheduler
      */
     public function getScheduleData(EventEntity $event)
     {
-        $talks     = $this->getTalks($event->getTalksUri().'?start=0&resultsperpage=1000');
+        $talks = $this->getTalks($event->getTalksUri().'?start=0&resultsperpage=1000');
         $eventDays = $this->getEventDays($talks);
 
         return $eventDays;
@@ -43,7 +43,7 @@ class EventScheduler
     /**
      * Retrieves talk collection from API
      *
-     * @param string $talks_uri
+     * @param $talks_uri
      * @return array
      */
     public function getTalks($talks_uri)
@@ -56,21 +56,21 @@ class EventScheduler
     /**
      * Get an array of populated EventSchedulerDay objects
      *
-     * @param array $talks
+     * @param $talks
      * @return array Array of EventSchedulerDay objects
      */
     public function getEventDays($talks)
     {
         if (empty($talks) || empty($talks['talks'])) {
-            return [];
+            return array();
         }
 
-        $talks      = $talks['talks'];
+        $talks = $talks['talks'];
         $talksByDay = $this->organiseTalksByDayAndTime($talks);
 
         $tracksByDay = $this->getTracksByDay($talks);
 
-        $eventDays = [];
+        $eventDays = array();
         foreach ($talksByDay as $date => $talks) {
             $eventDays[] = new EventSchedulerDay($date, $talks, $tracksByDay[$date]);
         }
@@ -83,23 +83,23 @@ class EventScheduler
      * associative array by day, then by time for each
      * day
      *
-     * @param array $talks
+     * @param $talks
      * @return array
      */
     protected function organiseTalksByDayAndTime($talks)
     {
-        $talksByDay = [];
+        $talksByDay = array();
 
         foreach ($talks as $talk) {
             $dateTime = $talk->getStartDateTime();
-            $date     = $dateTime->format('d-m-Y');
-            $time     = $dateTime->format('H:i');
+            $date = $dateTime->format('d-m-Y');
+            $time = $dateTime->format('H:i');
 
             if (!isset($talksByDay[$date]) || !array_key_exists($date, $talksByDay)) {
-                $talksByDay[$date] = [];
+                $talksByDay[$date] = array();
             }
             if (!isset($talksByDay[$date][$time]) || !array_key_exists($time, $talksByDay[$date])) {
-                $talksByDay[$date][$time] = [];
+                $talksByDay[$date][$time] = array();
             }
 
             $talksByDay[$date][$time][] = $talk;
@@ -112,19 +112,19 @@ class EventScheduler
      * Get a multi-dimensional indexed array of unique
      * track names by date
      *
-     * @param array $talks
+     * @param $talks
      * @return array
      */
     protected function getTracksByDay($talks)
     {
-        $tracksByDay = [];
+        $tracksByDay = array();
 
         foreach ($talks as $talk) {
             $dateTime = $talk->getStartDateTime();
-            $date     = $dateTime->format('d-m-Y');
+            $date = $dateTime->format('d-m-Y');
 
             if (!isset($tracksByDay[$date]) || !array_key_exists($date, $tracksByDay)) {
-                $tracksByDay[$date] = [];
+                $tracksByDay[$date] = array();
             }
 
             $tracks = $talk->getTracks();

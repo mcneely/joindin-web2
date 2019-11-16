@@ -2,16 +2,15 @@
 namespace Tests\Event;
 
 use Event\EventCommentEntity;
-use PHPUnit\Framework\TestCase;
 use stdClass;
 
-class EventCommentEntityTest extends TestCase
+class EventCommentEntityTest extends \PHPUnit_Framework_TestCase
 {
     private $commentData;
 
-    public function setUp(): void
+    public function setUp()
     {
-        $this->commentData                      = new stdClass();
+        $this->commentData = new stdClass();
         $this->commentData->comment             = "Test event comment text";
         $this->commentData->user_display_name   = "Test comment display name";
         $this->commentData->created_date        = "2014-03-02T08:43:44+01:00";
@@ -21,9 +20,10 @@ class EventCommentEntityTest extends TestCase
         $this->commentData->event_comments_uri  = "Test comments uri";
         $this->commentData->user_uri            = "Test user uri";
         $this->commentData->source              = "Test comment source";
+
     }
 
-    public function testBasicCommentsData(): void
+    public function testBasicCommentsData()
     {
         $comment = new EventCommentEntity($this->commentData);
 
@@ -53,7 +53,7 @@ class EventCommentEntityTest extends TestCase
         );
     }
 
-    public function testNonExistentTestDataDoesntBreak(): void
+    public function testNonExistentTestDataDoesntBreak()
     {
         $comment = new EventCommentEntity(new stdClass());
 

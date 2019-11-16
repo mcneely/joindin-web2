@@ -1,17 +1,16 @@
 <?php
 namespace Tests\Talk;
 
-use PHPUnit\Framework\TestCase;
 use Talk\TalkCommentEntity;
 use stdClass;
 
-class TalkCommentEntityTest extends TestCase
+class TalkCommentEntityTest extends \PHPUnit_Framework_TestCase
 {
     private $commentData;
 
-    public function setUp(): void
+    public function setUp()
     {
-        $this->commentData                      = new stdClass();
+        $this->commentData = new stdClass();
         $this->commentData->rating              = 5;
         $this->commentData->comment             = "Test event comment text";
         $this->commentData->user_display_name   = "Test comment display name";
@@ -25,7 +24,7 @@ class TalkCommentEntityTest extends TestCase
         $this->commentData->source              = "Test comment source";
     }
 
-    public function testBasicCommentsData(): void
+    public function testBasicCommentsData()
     {
         $comment = new TalkCommentEntity($this->commentData);
 
@@ -70,7 +69,7 @@ class TalkCommentEntityTest extends TestCase
         );
     }
 
-    public function testNonExistentTestDataDoesntBreak(): void
+    public function testNonExistentTestDataDoesntBreak()
     {
         $comment = new TalkCommentEntity(new stdClass());
 
