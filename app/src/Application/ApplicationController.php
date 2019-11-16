@@ -10,12 +10,11 @@ class ApplicationController extends BaseController
 {
     protected function defineRoutes(\Slim\Slim $app)
     {
-        $app->get('/', array($this, 'index'));
-        $app->get('/apps', array($this, 'apps'))->name('apps');
-        $app->get('/about', array($this, 'about'))->name('about');
-        $app->map('/contact', array($this, 'contact'))->via('GET', 'POST')->name('contact');
-        $app->get('/not-allowed', array($this, 'notAllowed'))->name('not-allowed');
-        $app->get('/assets', array($this, 'assets'))->name('assets');
+        $app->get('/', [$this, 'index']);
+        $app->get('/about', [$this, 'about'])->name('about');
+        $app->map('/contact', [$this, 'contact'])->via('GET', 'POST')->name('contact');
+        $app->get('/not-allowed', [$this, 'notAllowed'])->name('not-allowed');
+        $app->get('/assets', [$this, 'assets'])->name('assets');
     }
 
     public function index()
@@ -25,46 +24,33 @@ class ApplicationController extends BaseController
             : $this->application->request()->get('page');
 
         $perPage = 10;
-        $start = ($page -1) * $perPage;
+        $start   = ($page -1) * $perPage;
 
-        $eventApi = $this->getEventApi();
-        $hotEvents = $eventApi->getEvents($perPage, $start, 'hot');
-        $cfpEvents = $eventApi->getEvents(4, 0, 'cfp', true);
+        $eventApi       = $this->getEventApi();
+        $upcomingEvents = $eventApi->getEvents($perPage, $start, 'upcoming');
+        $cfpEvents      = $eventApi->getEvents(4, 0, 'cfp', true);
 
         $this->render(
             'Application/index.html.twig',
-            array(
-                'events' => $hotEvents,
+            [
+                'events'     => $upcomingEvents,
                 'cfp_events' => $cfpEvents,
-                'page' => $page,
-            )
+                'page'       => $page,
+            ]
         );
     }
 
     /**
      * Get latest current events
      *
-     * @param $start
-     * @param $perPage
+     * @param int $start
+     * @param int $perPage
      * @return array
      */
     public function getCurrentEvents($start, $perPage)
     {
         $eventApi = $this->getEventApi();
-        return $eventApi->getEvents($perPage, $start, 'hot');
-    }
-
-    /**
-     * Display the apps page
-     */
-    public function apps()
-    {
-        $this->render(
-            'Application/apps.html.twig',
-            [
-                'hot_events' => $this->getCurrentEvents(0, 5),
-            ]
-        );
+        return $eventApi->getEvents($perPage, $start, 'upcoming');
     }
 
     /**
@@ -75,7 +61,7 @@ class ApplicationController extends BaseController
         $this->render(
             'Application/about.html.twig',
             [
-                'hot_events' => $this->getCurrentEvents(0, 5),
+                'upcoming_events' => $this->getCurrentEvents(0, 5),
             ]
         );
     }
@@ -97,8 +83,8 @@ class ApplicationController extends BaseController
             if ($form->isValid()) {
                 $values = $form->getData();
 
-                $config = $this->application->config('oauth');
-                $clientId = $config['client_id'];
+                $config       = $this->application->config('oauth');
+                $clientId     = $config['client_id'];
                 $clientSecret = $config['client_secret'];
 
                 try {
@@ -135,7 +121,7 @@ class ApplicationController extends BaseController
         $this->render(
             'Application/assets.html.twig',
             [
-                'hot_events' => $this->getCurrentEvents(0, 5),
+                'upcoming_events' => $this->getCurrentEvents(0, 5),
             ]
         );
     }
@@ -146,7 +132,6 @@ class ApplicationController extends BaseController
      */
     public function notAllowed()
     {
-
         $this->render('Application/not-allowed.html.twig', [
             'redirect' => $this->application->request->get('redirect')
         ]);

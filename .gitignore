@@ -5,3 +5,6 @@ vendor/.git
 node_modules/
 .DS_Store
 web/inc
+vendor/
+.phpunit.result.cache
+.idea
